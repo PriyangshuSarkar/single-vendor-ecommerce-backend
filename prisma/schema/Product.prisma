@@ -1,0 +1,116 @@
+model Product {
+  id            String        @id @default(uuid(7))
+  name          String
+  slug          String        @unique
+  description   Json
+  basePrice     Float
+  publishStatus PublishStatus @default(DRAFT)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  parentProduct     Product?  @relation("ProductVariants", fields: [parentProductId], references: [id])
+  parentProductId   String?
+  variants          Product[] @relation("ProductVariants")
+  variantAttributes Json?
+  isVariantGroup    Boolean   @default(false)
+
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
+
+  metadata    ProductMetadata?
+  inventories Inventory?
+  discounts   Discount[]
+  reviews     Review[]
+  seo         SEO?
+  tags        Tag[]
+
+  @@index([id])
+  @@index([slug])
+  @@index([categoryId])
+  @@index([parentProductId])
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model ProductMetadata {
+  product        Product @relation(fields: [id], references: [id], onDelete: Cascade)
+  id             String  @id @default(uuid(7))
+  specifications Json
+  details        Json
+  attributes     Json?
+  dimensions     Json?
+  weight         Float?
+  materials      String?
+  order          Int     @default(0)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  media ProductMedia[]
+
+  @@index([id])
+}
+
+model ProductMedia {
+  id        String    @id @default(uuid(7))
+  url       String
+  type      MediaType
+  altText   String?
+  order     Int       @default(0)
+  isPrimary Boolean   @default(false)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  productMetadata   ProductMetadata @relation(fields: [productMetadataId], references: [id])
+  productMetadataId String
+
+  @@index([id])
+  @@index([productMetadataId])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  MODEL_3D
+}
+
+model SEO {
+  id          String   @id @default(uuid(7))
+  title       String?
+  description String?
+  keywords    String[]
+  ogImage     String?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique
+
+  @@index([id])
+  @@index([productId])
+}
+
+model Tag {
+  id   String @id @default(uuid(7))
+  name String @unique
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  products Product[]
+
+  @@index([id])
+}

@@ -1,0 +1,57 @@
+model AuditLog {
+    id        String  @id @default(uuid(7))
+    userId    String?
+    action    String
+    entity    String
+    entityId  String
+    details   Json?
+    ipAddress String?
+    userAgent String?
+
+    createdAt DateTime? @default(now())
+    updatedAt DateTime? @updatedAt
+    deletedAt DateTime?
+
+    @@index([id])
+    @@index([userId])
+    @@index([entity, entityId])
+    @@index([createdAt])
+}
+
+model Analytics {
+    id              String        @id @default(uuid(7))
+    type            AnalyticsType
+    source          String
+    pageUrl         String?
+    referrer        String?
+    device          String?
+    browser         String?
+    operatingSystem String?
+    userId          String?
+    sessionId       String?
+    ipAddress       String?
+    countryCode     String?
+    eventData       Json?
+
+    createdAt DateTime? @default(now())
+    updatedAt DateTime? @updatedAt
+    deletedAt DateTime?
+
+    @@index([id])
+    @@index([type])
+    @@index([userId])
+    @@index([createdAt])
+}
+
+enum AnalyticsType {
+    PAGE_VIEW
+    PRODUCT_VIEW
+    CATEGORY_VIEW
+    CART_ADD
+    CART_REMOVE
+    CHECKOUT_START
+    CHECKOUT_COMPLETE
+    SEARCH
+    USER_SIGNUP
+    USER_LOGIN
+}

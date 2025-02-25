@@ -1,0 +1,76 @@
+model Order {
+  id                String      @id @default(uuid(7))
+  orderNumber       String      @unique
+  subtotal          Float
+  tax               Float
+  shipping          Float
+  discount          Float       @default(0)
+  totalAmount       Float
+  status            OrderStatus @default(PENDING)
+  notes             String?
+  payment           Payment?
+  shipment          Shipment?
+  cancelReason      String?
+  couponCode        String?
+  completedAt       DateTime?
+  estimatedDelivery DateTime?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  user       User        @relation(fields: [userId], references: [id])
+  userId     String
+  orderItems OrderItem[]
+
+  @@index([id])
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  AWAITING_PAYMENT
+  AWAITING_FULFILLMENT
+  READY_FOR_PICKUP
+  PARTIALLY_SHIPPED
+  SHIPPED
+  DELIVERED
+  CANCELED
+  REFUNDED
+  RETURNED
+  ON_HOLD
+}
+
+model OrderItem {
+  id          String  @id @default(uuid(7))
+  productName String // Snapshot of product name at order time
+  sku         String? // Snapshot of SKU at order time
+  price       Float // Price at the time of order
+  quantity    Int
+  discount    Float   @default(0)
+
+  status    OrderItemStatus @default(PENDING)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  order       Order     @relation(fields: [orderId], references: [id])
+  orderId     String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+  inventoryId String
+
+  @@index([id])
+  @@index([orderId])
+  @@index([inventoryId])
+}
+
+enum OrderItemStatus {
+  PENDING
+  FULFILLED
+  CANCELED
+  REFUNDED
+  RETURNED
+}

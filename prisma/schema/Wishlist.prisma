@@ -1,0 +1,30 @@
+model Wishlist {
+  id       String  @id @default(uuid(7))
+  name     String  @default("Default")
+  isPublic Boolean @default(false)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  items  WishlistItem[]
+
+  @@index([id])
+  @@index([userId])
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid(7))
+  productId String
+  addedAt   DateTime @default(now())
+
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  wishlistId String
+
+  @@unique([wishlistId, productId])
+  @@index([id])
+  @@index([wishlistId])
+  @@index([productId])
+}

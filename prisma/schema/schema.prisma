@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+  binaryTargets   = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 📦prisma
+//  ┣ 📜User.prisma
+//  ┣ 📜Address.prisma
+//  ┣ 📜Product.prisma
+//  ┣ 📜Category.prisma
+//  ┣ 📜Inventory.prisma
+//  ┣ 📜Order.prisma
+//  ┣ 📜Cart.prisma
+//  ┣ 📜Payment.prisma
+//  ┣ 📜Shipment.prisma
+//  ┣ 📜Review.prisma
+//  ┣ 📜Discount.prisma
+//  ┣ 📜Notification.prisma
+//  ┣ 📜Wishlist.prisma
+//  ┣ 📜Subscription.prisma
+//  ┣ 📜Chat.prisma
+//  ┣ 📜Analytics.prisma
+//  ┗ 📜schema.prisma

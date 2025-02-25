@@ -1,0 +1,37 @@
+model Shipment {
+  id                String         @id @default(uuid())
+  trackingId        String?        @unique
+  carrier           String?
+  status            ShipmentStatus @default(PENDING)
+  shippingMethod    String?
+  shippedAt         DateTime?
+  deliveredAt       DateTime?
+  estimatedDelivery DateTime?
+  trackingHistory   Json?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String  @unique
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId String
+
+  @@index([id])
+  @@index([trackingId])
+  @@index([status])
+  @@index([addressId])
+}
+
+enum ShipmentStatus {
+  PENDING
+  PROCESSING
+  READY_FOR_PICKUP
+  DISPATCHED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED_DELIVERY
+  RETURNED
+}

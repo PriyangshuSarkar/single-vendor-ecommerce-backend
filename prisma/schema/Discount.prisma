@@ -1,0 +1,60 @@
+model Discount {
+  id          String       @id @default(uuid(7))
+  code        String       @unique
+  description String?
+  discount    Float
+  type        DiscountType @default(PERCENTAGE)
+  maxUses     Int?
+  usesCount   Int          @default(0)
+  minAmount   Float?
+  maxAmount   Float?
+  startDate   DateTime?
+  expiresAt   DateTime?
+  productId   String?
+  isActive    Boolean      @default(true)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  categories Category[]
+  products   Product[]
+
+  @@index([id])
+  @@index([code])
+  @@index([isActive])
+  @@index([startDate, expiresAt])
+}
+
+enum DiscountType {
+  AMOUNT
+  PERCENTAGE
+  BUY_X_GET_Y
+  FREE_SHIPPING
+  SUBSCRIPTION
+}
+
+model Coupon {
+  id          String       @id @default(uuid(7))
+  code        String       @unique
+  description String?
+  discount    Float
+  type        DiscountType @default(AMOUNT)
+  maxUses     Int?
+  usesCount   Int          @default(0)
+  startDate   DateTime?
+  expiresAt   DateTime?
+  minAmount   Float?
+  maxAmount   Float?
+  productId   String?
+  isActive    Boolean      @default(true)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  @@index([id])
+  @@index([code])
+  @@index([isActive])
+  @@index([startDate, expiresAt])
+}

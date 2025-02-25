@@ -1,0 +1,101 @@
+model User {
+  id           String    @id @default(uuid(7))
+  slug         String    @unique
+  password     String
+  name         String
+  profileImage String?
+  role         Role      @default(USER)
+  isActive     Boolean   @default(true)
+  isVerified   Boolean   @default(false)
+  lastLoginAt  DateTime?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  credentials   Credential[]
+  addresses     Address[]
+  orders        Order[]
+  cart          Cart?
+  wishlist      Wishlist[]
+  reviews       Review[]
+  payments      Payment[]
+  notifications Notification[]
+  subscriptions Subscription[]
+  sessions      Session[]
+  refreshTokens RefreshToken[]
+
+  @@index([id])
+  @@index([slug])
+}
+
+enum Role {
+  USER
+  ADMIN
+  VENDOR
+  SUPPORT
+}
+
+model Credential {
+  id           String         @id @default(uuid(7))
+  type         CredentialType
+  value        String         @unique
+  isVerified   Boolean?       @default(false)
+  isPrimary    Boolean?       @default(false)
+  verifiedAt   DateTime?
+  order        Int?
+  otp          String?
+  otpExpiresAt DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([id])
+  @@index([userId])
+  @@index([value])
+}
+
+enum CredentialType {
+  EMAIL
+  PHONE
+}
+
+model Session {
+  id        String   @id @default(uuid(7))
+  token     String   @unique
+  expiresAt DateTime
+  userAgent String?
+  ipAddress String?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([id])
+  @@index([userId])
+  @@index([token])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid(7))
+  token     String   @unique
+  expiresAt DateTime
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([id])
+  @@index([userId])
+  @@index([token])
+}

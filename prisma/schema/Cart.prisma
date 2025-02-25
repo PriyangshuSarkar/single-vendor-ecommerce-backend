@@ -1,0 +1,36 @@
+model Cart {
+  id         String  @id @default(uuid(7))
+  totalPrice Float   @default(0.0)
+  couponCode String?
+  taxAmount  Float   @default(0.0)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String     @unique
+  items  CartItem[]
+
+  @@index([id])
+  @@index([userId])
+}
+
+model CartItem {
+  id          String    @id @default(uuid(7))
+  inventoryId String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+  quantity    Int
+  price       Float
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId String
+
+  @@index([id])
+  @@index([cartId])
+  @@index([inventoryId])
+}

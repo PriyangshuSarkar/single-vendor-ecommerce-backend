@@ -1,0 +1,69 @@
+model Inventory {
+  product           Product         @relation(fields: [id], references: [id], onDelete: Cascade)
+  id                String          @id @default(uuid(7))
+  quantity          Int
+  price             Float
+  salePrice         Float?
+  costPrice         Float?
+  minQuantity       Int             @default(0) // Minimum stock threshold
+  maxQuantity       Int? // Maximum stock limit
+  reservedQuantity  Int             @default(0) // Quantity reserved for pending orders
+  availableQuantity Int             @default(0) // Actual available quantity
+  status            InventoryStatus @default(IN_STOCK)
+  barcode           String?         @unique
+  sku               String?         @unique
+  reorderPoint      Int?
+  reorderQuantity   Int?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  skuItems   SkuItem[]
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+
+  @@index([id])
+  @@index([sku])
+  @@index([barcode])
+}
+
+enum InventoryStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+model SkuItem {
+  id                String    @id @default(uuid(7))
+  code              String    @unique // Unique SKU code
+  batchNumber       String
+  batchAttributes   Json?
+  manufacturingDate DateTime?
+  expiryDate        DateTime?
+  location          String?
+  supplier          String?
+  cost              Float?
+  status            SkuStatus @default(ACTIVE)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  inventoryId String
+
+  @@index([id])
+  @@index([inventoryId])
+  @@index([code])
+  @@index([batchNumber])
+}
+
+enum SkuStatus {
+  ACTIVE
+  INACTIVE
+  SOLD
+  EXPIRED
+  RESERVED
+}
