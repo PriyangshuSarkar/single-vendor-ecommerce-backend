@@ -1,7 +1,7 @@
 model Product {
   id            String        @id @default(uuid(7))
   name          String
-  slug          String        @unique
+  slug          String?       @unique
   description   Json
   basePrice     Float
   publishStatus PublishStatus @default(DRAFT)

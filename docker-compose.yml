@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_E_COMMERCE
+    env_file:
+      - .env
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    volumes:
+      - '${POSTGRES_VOLUME_PATH}:/var/lib/postgresql/data'
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres', '-h', '127.0.0.1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: always
+# docker-compose down -v
+# docker-compose up -d
