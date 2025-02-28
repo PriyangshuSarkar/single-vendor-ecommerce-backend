@@ -29,6 +29,8 @@ export const VerifyOtpPayloadDto = z
       .regex(/^\+\d{1,3}\d{10}$/)
       .optional(),
     otp: z.string().length(6, 'OTP must be exactly 6 digits'),
+    ipAddress: z.string().trim().optional(),
+    userAgent: z.string().trim().optional(),
   })
   .refine((data) => (data.email ? !data.phone : data.phone), {
     message: 'Either email or phone must be provided, but not both.',
@@ -40,7 +42,12 @@ export type VerifyOtpPayloadDto = z.infer<typeof VerifyOtpPayloadDto>;
 
 // ✅ Verify OTP Response Schema (Zod)
 export const VerifyOtpResponseDto = z.object({
-  token: z.string().trim(),
+  message: z.string(),
+  userId: z.string().optional(),
+  userSlug: z.string().optional(),
+  accessToken: z.string().optional(),
+  refreshToken: z.string().optional(),
+  sessionId: z.string().optional(),
 });
 
 // ✅ TypeScript Type Inference for Response DTO

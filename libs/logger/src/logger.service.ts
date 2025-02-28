@@ -7,65 +7,26 @@ const { combine, timestamp, printf, colorize } = format;
 @Injectable()
 export class Logger implements LoggerService {
   private logger = createLogger({
-    level: 'info', // Set default log level
+    level: 'info',
     format: combine(
       colorize({ all: true, level: true }),
       timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
       printf(({ timestamp, level, message, context, trace }) => {
-        // Add trace to the output if it exists
         const traceOutput = trace
           ? `\n\x1b[33mStack Trace:\x1b[0m\n${trace}`
           : '';
-        return `\x1b[36m[${timestamp}]\x1b[0m \x1b[1m[\x1b[${this.getLogLevelColor(level)}m${level}\x1b[0m\x1b[1m]\x1b[0m ${
-          context ? `\x1b[32m[${context}]\x1b[0m ` : ''
-        }${message}${traceOutput}`;
+        const fixedSpacing = 40;
+        const timestampFormatted = this.formatTimestamp(
+          timestamp as string,
+        ).padEnd(fixedSpacing - level.length);
+        return stripAnsi(level) !== 'info'
+          ? `\n\n\x1b[0m\x1b[32m[Nest]\x1b[0m \x1b[32m${process.pid}\x1b[0m  \x1b[32m- \x1b[37m${timestampFormatted}\x1b[0m` +
+              `\x1b[33m${level}\x1b[0m ${context ? `\x1b[33m[${context}]\x1b[0m ` : ''}${message}${traceOutput}\n\n`
+          : `\x1b[0m\x1b[32m[Nest]\x1b[0m \x1b[32m${process.pid}\x1b[0m  \x1b[32m- \x1b[37m${timestampFormatted}\x1b[0m` +
+              `\x1b[33m${level}\x1b[0m ${context ? `\x1b[33m[${context}]\x1b[0m ` : ''}${message}${traceOutput}`;
       }),
     ),
-    transports: [
-      new transports.Console({
-        format: combine(
-          colorize({ all: true, level: true }),
-          printf(
-            ({
-              level,
-              message,
-              context,
-              timestamp,
-              trace,
-            }: {
-              level: string;
-              message: string;
-              context: string;
-              timestamp: string;
-              trace: string;
-            }) => {
-              // Add trace to console output if it exists
-              const traceOutput = trace
-                ? `\n\x1b[33mStack Trace:\x1b[0m\n${trace}`
-                : '';
-              const logMessage = `\x1b[0m\x1b[1m[\x1b[${this.getLogLevelColor(level)}m${level.padEnd(7)}\x1b[0m\x1b[1m]\x1b[0m\x1b[0m \x1b[32m${process.pid}\x1b[0m  \x1b[32m- \x1b[37m${this.formatTimestamp(timestamp).padEnd(20)}\x1b[0m  ${
-                context ? `\x1b[32m[${context.padEnd(15)}]\x1b[0m ` : ''
-              }${message}${traceOutput}`;
-
-              return stripAnsi(level) != 'info'
-                ? `\n\n${logMessage}\n\n`
-                : logMessage;
-            },
-          ),
-        ),
-      }),
-      // Uncomment the following to add file logging
-      // new transports.File({F
-      //   filename: 'logs/app.log',
-      //   format: combine(
-      //     timestamp(),
-      //     printf(({ timestamp, level, message, context, trace }) => {
-      //       const traceOutput = trace ? `\nStack Trace:\n${trace}` : '';
-      //       return `[${timestamp}] [${level}] ${context ? `[${context}]` : ''} ${message}${traceOutput}`;
-      //     }),
-      //   ),
-      // }),
-    ],
+    transports: [new transports.Console()], // No need to specify a format here!
   });
 
   log(message: string, context?: string) {
@@ -88,25 +49,7 @@ export class Logger implements LoggerService {
     this.logger.verbose({ message, context });
   }
 
-  private getLogLevelColor(level: string): string {
-    switch (level) {
-      case 'info':
-        return '32'; // Green
-      case 'error':
-        return '31'; // Red
-      case 'warn':
-        return '33'; // Yellow
-      case 'debug':
-        return '34'; // Blue
-      case 'verbose':
-        return '35'; // Magenta
-      default:
-        return '37'; // White
-    }
-  }
-
   private formatTimestamp(timestamp: string): string {
-    const date = new Date(timestamp);
     return new Intl.DateTimeFormat('en-US', {
       month: '2-digit',
       day: '2-digit',
@@ -115,6 +58,6 @@ export class Logger implements LoggerService {
       minute: '2-digit',
       second: '2-digit',
       hour12: true,
-    }).format(date);
+    }).format(new Date(timestamp));
   }
 }

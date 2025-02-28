@@ -26,6 +26,8 @@ export const LoginPayloadDto = z
       .regex(/^\+\d{1,3}\d{10}$/)
       .optional(),
     password: z.string().min(6),
+    ipAddress: z.string().trim().optional(),
+    userAgent: z.string().trim().optional(),
   })
   .refine((data) => data.email || data.phone, {
     message: 'Either email or phone must be provided',
@@ -36,7 +38,12 @@ export type LoginPayloadDto = z.infer<typeof LoginPayloadDto>;
 
 // ✅ Verify OTP Response Schema (Zod)
 export const LoginResponseDto = z.object({
-  token: z.string(),
+  message: z.string(),
+  userId: z.string().optional(),
+  userSlug: z.string().optional(),
+  accessToken: z.string().optional(),
+  refreshToken: z.string().optional(),
+  sessionId: z.string().optional(),
 });
 // ✅ TypeScript Type Inference for Response DTO
 export type LoginResponseDto = z.infer<typeof LoginResponseDto>;

@@ -4,6 +4,8 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ZodBodyValidationPipe } from '@app/pipes/zod';
 import { ZodResponseInterceptor } from '@app/interceptors/zod';
 import {
+  AddCredentialPayloadDto,
+  AddCredentialResponseDto,
   LoginPayloadDto,
   LoginResponseDto,
   LogoutPayloadDto,
@@ -43,6 +45,16 @@ export class AuthController {
     return await this.authService.login(payload);
   }
 
+  @MessagePattern({ cmd: 'auth_add_credential' })
+  @UsePipes(new ZodBodyValidationPipe(AddCredentialPayloadDto))
+  @UseInterceptors(new ZodResponseInterceptor(AddCredentialResponseDto))
+  async addCredential(
+    @Payload()
+    payload: AddCredentialPayloadDto,
+  ) {
+    return await this.authService.addCredential(payload);
+  }
+
   @MessagePattern({ cmd: 'auth_validate_access_token' })
   @UsePipes(new ZodBodyValidationPipe(ValidateAccessTokenPayloadDto))
   @UseInterceptors(new ZodResponseInterceptor(ValidateAccessTokenResponseDto))
@@ -60,7 +72,7 @@ export class AuthController {
     return await this.authService.refreshAccessToken(payload);
   }
 
-  @MessagePattern({ cmd: 'auth_refresh_access_token' })
+  @MessagePattern({ cmd: 'auth_logout' })
   @UsePipes(new ZodBodyValidationPipe(LogoutPayloadDto))
   @UseInterceptors(new ZodResponseInterceptor(LogoutResponseDto))
   async logout(

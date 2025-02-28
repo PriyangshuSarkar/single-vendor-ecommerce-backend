@@ -10,21 +10,22 @@ export class LoggingInterceptor implements NestInterceptor {
   constructor(private readonly logger: Logger) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const start = Date.now();
     const data = context.switchToRpc().getData(); // Get the incoming message from the RPC context
-    const pattern = context.getArgs()[0].pattern; // Get the message pattern (e.g., 'auth.login')
+    const pattern = context.switchToRpc().getContext().args[1];
 
     // Log incoming message
     this.logger.log(
-      `Received message for pattern: ${pattern} with data: ${JSON.stringify(data)}`,
-      'MicroserviceLogger',
+      `${pattern} | Data: ${JSON.stringify(data)}`,
+      'TCPRequestLogger',
     );
 
     return next.handle().pipe(
-      tap((result) => {
-        // Log the response after processing
+      tap((response) => {
+        const duration = Date.now() - start;
         this.logger.log(
-          `Processed response for pattern: ${pattern} with result: ${JSON.stringify(result)}`,
-          'MicroserviceLogger',
+          `${JSON.stringify(response)} | Duration: \x1b[33m+${duration}ms\x1b[0m`,
+          'TCPResponseLogger',
         );
       }),
     );

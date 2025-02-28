@@ -23,6 +23,7 @@ import { PrismaModule } from '@app/prisma';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AuthModule,
   ],
   controllers: [AuthController],
   providers: [

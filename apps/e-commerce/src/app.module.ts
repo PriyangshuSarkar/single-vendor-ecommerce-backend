@@ -1,10 +1,30 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
+import { CursorUtil, ErrorUtil, FileUtil } from './utils';
+import { Logger, LoggerModule } from '@app/logger';
+import { LoggerMiddleware } from './logger/logger.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [],
+  imports: [
+    AuthModule,
+    LoggerModule,
+    ConfigModule.forRoot({
+      isGlobal: true, // ✅ Makes ConfigService available across the app
+    }),
+    JwtModule.register({}),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ErrorUtil, FileUtil, Logger, CursorUtil],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*'); // Apply LoggerMiddleware to all routes
+  }
+}

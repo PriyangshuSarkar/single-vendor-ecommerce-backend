@@ -13,8 +13,8 @@ export type RefreshAccessTokenRequestBodyDto = z.infer<
 
 // ✅ Validate Token Request Schema (Zod)
 export const RefreshAccessTokenPayloadDto = z.object({
-  sessionId: z.string(),
   token: z.string(),
+  sessionId: z.string(),
   userId: z.string().optional(),
 });
 
@@ -24,12 +24,11 @@ export type RefreshAccessTokenPayloadDto = z.infer<
 >;
 
 // ✅ Validate Token Response Schema (Zod)
-export const RefreshAccessTokenResponseDto = z
-  .object({
-    id: z.string().optional(),
-    slug: z.string().optional(),
-  })
-  .optional();
+export const RefreshAccessTokenResponseDto = z.object({
+  message: z.string(),
+  accessToken: z.string().optional(),
+  refreshToken: z.string().optional(),
+});
 
 // ✅ TypeScript Type Inference for Response DTO
 export type RefreshAccessTokenResponseDto = z.infer<

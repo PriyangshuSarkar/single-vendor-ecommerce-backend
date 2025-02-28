@@ -158,9 +158,15 @@ export class AuthService {
       });
 
       const { accessToken, refreshToken, sessionId } =
-        await this.sessionUtil.createSession(user.id);
+        await this.sessionUtil.createSession(
+          user.id,
+          user.slug,
+          payload.userAgent,
+          payload.ipAddress,
+        );
 
       return {
+        message: 'Validation successful',
         userId: user.id,
         userSlug: user.slug,
         accessToken,
@@ -205,12 +211,21 @@ export class AuthService {
         throw new ForbiddenException('Invalid credentials');
       }
 
-      const { accessToken, refreshToken } =
-        await this.sessionUtil.createSession(existingUser.id);
+      const { accessToken, refreshToken, sessionId } =
+        await this.sessionUtil.createSession(
+          existingUser.id,
+          existingUser.slug,
+          payload.userAgent,
+          payload.ipAddress,
+        );
 
       return {
+        message: 'Login successful',
+        userId: existingUser.id,
+        userSlug: existingUser.slug,
         accessToken,
         refreshToken,
+        sessionId,
       };
     } catch (error) {
       this.errorUtil.handleError(error);
@@ -302,11 +317,16 @@ export class AuthService {
         throw new UnauthorizedException('Provide refresh token and sessionId');
       }
 
-      return await this.sessionUtil.refreshAccessToken(
+      const { accessToken } = await this.sessionUtil.refreshAccessToken(
         sessionId,
         token,
         userId,
       );
+
+      return {
+        message: 'Refresh token successful',
+        accessToken,
+      };
     } catch (error) {
       this.errorUtil.handleError(error);
     }

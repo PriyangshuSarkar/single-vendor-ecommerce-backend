@@ -5,6 +5,7 @@ import { HashUtil } from './hash.utils';
 import { JwtUtil } from './jwt.utils';
 
 import * as uuid from 'uuid';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SessionUtil {
@@ -13,15 +14,33 @@ export class SessionUtil {
     private readonly errorUtil: ErrorUtil,
     private readonly hashUtil: HashUtil,
     private readonly jwtUtil: JwtUtil,
+    private readonly configService: ConfigService,
   ) {}
 
-  async createSession(userId: string, userAgent?: string, ipAddress?: string) {
+  async createSession(
+    userId: string,
+    userSlug: string,
+    userAgent?: string,
+    ipAddress?: string,
+  ) {
     try {
-      const accessToken = await this.jwtUtil.sign({ userId });
+      const accessToken = await this.jwtUtil.sign({
+        id: userId,
+        slug: userSlug,
+      });
 
       const refreshToken = uuid.v7(); // Generate a unique refresh token
+      const sessionExpiryDays = this.configService.get<number>(
+        'SESSION_EXPIRY_DAYS',
+        30,
+      );
+
+      console.log(sessionExpiryDays);
       const refreshTokenExpiry = new Date();
-      refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7); // Expires in 7 days
+      refreshTokenExpiry.setDate(
+        refreshTokenExpiry.getDate() + sessionExpiryDays,
+      );
+
       const hashedRefreshToken = await this.hashUtil.hash(refreshToken);
 
       // Store session
@@ -78,7 +97,7 @@ export class SessionUtil {
       // Generate new access token
       const newAccessToken = await this.jwtUtil.sign({ userId });
 
-      return newAccessToken;
+      return { accessToken: newAccessToken };
     } catch (error) {
       this.errorUtil.handleError(error);
     }

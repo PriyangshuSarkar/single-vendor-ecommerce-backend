@@ -26,7 +26,7 @@ export type LogoutPayloadDto = z.infer<typeof LogoutPayloadDto>;
 
 // ✅ Verify OTP Response Schema (Zod)
 export const LogoutResponseDto = z.object({
-  token: z.string(),
+  message: z.string(),
 });
 // ✅ TypeScript Type Inference for Response DTO
 export type LogoutResponseDto = z.infer<typeof LogoutResponseDto>;
