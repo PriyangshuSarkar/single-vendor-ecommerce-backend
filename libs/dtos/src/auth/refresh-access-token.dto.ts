@@ -28,6 +28,7 @@ export const RefreshAccessTokenResponseDto = z.object({
   message: z.string(),
   accessToken: z.string().optional(),
   refreshToken: z.string().optional(),
+  sessionId: z.string().optional(),
 });
 
 // ✅ TypeScript Type Inference for Response DTO

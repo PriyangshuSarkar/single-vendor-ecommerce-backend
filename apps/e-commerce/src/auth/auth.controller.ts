@@ -16,6 +16,8 @@ import {
 import {
   Body,
   Controller,
+  Delete,
+  Patch,
   Post,
   Req,
   Res,
@@ -60,30 +62,13 @@ export class AuthController {
     const { accessToken, refreshToken, ...response } =
       await this.authService.verifyOtp(body, userAgent, ipAddress);
 
-    if (req.get('X-Auth-Method') === 'token') {
-      return {
-        accessToken,
-        refreshToken,
-        ...response,
-      };
-    }
-
-    // ✅ Native way to set cookies in NestJS
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true, // Only for HTTPS
-      sameSite: 'strict', // CSRF protection
-    });
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
-
-    // ✅ NestJS still sends a JSON response
-    return {
-      ...response,
-    };
+    return this.authService.handleAuthResponse(
+      req,
+      res,
+      accessToken,
+      refreshToken,
+      response,
+    );
   }
 
   @Post('/login')
@@ -103,30 +88,13 @@ export class AuthController {
     const { accessToken, refreshToken, ...response } =
       await this.authService.login(body, userAgent, ipAddress);
 
-    if (req.get('X-Auth-Method') === 'token') {
-      return {
-        accessToken,
-        refreshToken,
-        ...response,
-      };
-    }
-
-    // ✅ Native way to set cookies in NestJS
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true, // Only for HTTPS
-      sameSite: 'strict', // CSRF protection
-    });
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
-
-    // ✅ NestJS still sends a JSON response
-    return {
-      ...response,
-    };
+    return this.authService.handleAuthResponse(
+      req,
+      res,
+      accessToken,
+      refreshToken,
+      response,
+    );
   }
 
   @Post('/add-credential')
@@ -140,7 +108,7 @@ export class AuthController {
     return await this.authService.addCredential(body, user);
   }
 
-  @Post('/refresh_access_token')
+  @Patch('/refresh_access_token')
   @UsePipes(new ZodBodyValidationPipe(RefreshAccessTokenRequestBodyDto))
   @UseInterceptors(new ZodResponseInterceptor(RefreshAccessTokenResponseDto))
   async refreshAccessToken(
@@ -148,43 +116,26 @@ export class AuthController {
     @Body() body: RefreshAccessTokenRequestBodyDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken =
+    const token =
       (req.headers['x-refresh-token'] as string) || req.cookies?.refresh_token;
 
-    if (!refreshToken) {
+    if (!token) {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const { accessToken, ...response } =
-      await this.authService.refreshAccessToken(refreshToken, body);
+    const { accessToken, refreshToken, ...response } =
+      await this.authService.refreshAccessToken(token, body);
 
-    if (req.get('X-Auth-Method') === 'token') {
-      return {
-        accessToken,
-        refreshToken,
-        ...response,
-      };
-    }
-
-    // ✅ Native way to set cookies in NestJS
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true, // Only for HTTPS
-      sameSite: 'strict', // CSRF protection
-    });
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
-
-    // ✅ NestJS still sends a JSON response
-    return {
-      ...response,
-    };
+    return this.authService.handleAuthResponse(
+      req,
+      res,
+      accessToken,
+      refreshToken,
+      response,
+    );
   }
 
-  @Post('/logout')
+  @Delete('/logout')
   @UsePipes(new ZodBodyValidationPipe(LogoutRequestBodyDto))
   @UseInterceptors(new ZodResponseInterceptor(LogoutResponseDto))
   async logout(@Body() body: LogoutRequestBodyDto) {

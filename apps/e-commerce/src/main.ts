@@ -1,7 +1,9 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@app/logger';
 import * as cookieParser from 'cookie-parser';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +16,20 @@ async function bootstrap() {
   const logger = new Logger();
 
   app.use(cookieParser());
+
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  // 🔥 Enables automatic response transformation (native NestJS way)
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+
+  const config = new DocumentBuilder()
+    .setTitle('E-commerce API')
+    .setDescription('The E-commerce API description')
+    .setVersion('2.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
   try {
     await app.listen(port, host);
     logger.log(`🚀 Server running on http://${host}:${port}`, 'Bootstrap');

@@ -298,9 +298,6 @@ export class AuthService {
   async validateAccessToken(payload: ValidateAccessTokenPayloadDto) {
     try {
       let token = payload.token;
-      if (!token?.startsWith('Bearer ')) {
-        return undefined; // Use consistent return type for invalid headers
-      }
 
       token = token.replace('Bearer ', '');
 
@@ -317,15 +314,17 @@ export class AuthService {
         throw new UnauthorizedException('Provide refresh token and sessionId');
       }
 
-      const { accessToken } = await this.sessionUtil.refreshAccessToken(
-        sessionId,
-        token,
-        userId,
-      );
+      const {
+        accessToken,
+        refreshToken,
+        sessionId: id,
+      } = await this.sessionUtil.refreshAccessToken(sessionId, token, userId);
 
       return {
         message: 'Refresh token successful',
         accessToken,
+        refreshToken,
+        sessionId: id,
       };
     } catch (error) {
       this.errorUtil.handleError(error);

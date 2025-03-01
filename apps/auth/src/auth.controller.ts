@@ -13,7 +13,7 @@ import {
   RefreshAccessTokenPayloadDto,
   RefreshAccessTokenResponseDto,
   RegisterPayloadDto,
-  RegisterResponseDto,
+  // RegisterResponseDto,
   ValidateAccessTokenPayloadDto,
   ValidateAccessTokenResponseDto,
   VerifyOtpPayloadDto,
@@ -25,8 +25,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @MessagePattern({ cmd: 'auth_register' })
-  @UsePipes(new ZodBodyValidationPipe(RegisterPayloadDto))
-  @UseInterceptors(new ZodResponseInterceptor(RegisterResponseDto))
+  // @UsePipes(new ZodBodyValidationPipe(RegisterPayloadDto))
+  // @UseInterceptors(new ZodResponseInterceptor(RegisterResponseDto))
   async register(@Payload() payload: RegisterPayloadDto) {
     return await this.authService.register(payload);
   }
@@ -59,7 +59,8 @@ export class AuthController {
   @UsePipes(new ZodBodyValidationPipe(ValidateAccessTokenPayloadDto))
   @UseInterceptors(new ZodResponseInterceptor(ValidateAccessTokenResponseDto))
   async validateAccessToken(@Payload() payload: ValidateAccessTokenPayloadDto) {
-    return await this.authService.validateAccessToken(payload);
+    const test = await this.authService.validateAccessToken(payload);
+    return test;
   }
 
   @MessagePattern({ cmd: 'auth_refresh_access_token' })

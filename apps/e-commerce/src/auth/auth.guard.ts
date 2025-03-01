@@ -13,15 +13,28 @@ import {
   ValidateAccessTokenResponseDto,
 } from '@app/dtos';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly JWT_SECRET: string;
+  private readonly JWT_EXPIRATION_TIME: string;
   constructor(
     @Inject('AUTH_SERVICE')
     private readonly authClient: ClientProxy,
     private readonly errorUtil: ErrorUtil,
     private readonly jwtService: JwtService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.JWT_SECRET = this.configService.get<string>(
+      'JWT_SECRET',
+      'defaultSecret',
+    ); // Added fallback
+    this.JWT_EXPIRATION_TIME = this.configService.get<string>(
+      'JWT_EXPIRATION_TIME',
+      '1h',
+    );
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
@@ -38,7 +51,9 @@ export class AuthGuard implements CanActivate {
 
       try {
         // ✅ First attempt: Verify JWT locally
-        decoded = await this.jwtService.verifyAsync(token);
+        decoded = await this.jwtService.verifyAsync(token, {
+          secret: this.JWT_SECRET,
+        });
       } catch {}
 
       if (!decoded) {

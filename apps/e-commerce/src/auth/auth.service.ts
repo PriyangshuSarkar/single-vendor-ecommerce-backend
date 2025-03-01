@@ -17,6 +17,7 @@ import {
   VerifyOtpRequestBodyDto,
 } from '@app/dtos';
 import { catchError, firstValueFrom, throwError } from 'rxjs';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -125,6 +126,7 @@ export class AuthService {
           } as RefreshAccessTokenPayloadDto)
           .pipe(
             catchError((error) => {
+              console.error(error);
               return throwError(() => error);
             }),
           ),
@@ -145,6 +147,41 @@ export class AuthService {
             }),
           ),
       );
+    } catch (error) {
+      throw this.errorUtil.handleError(error);
+    }
+  }
+
+  async handleAuthResponse(
+    req: Request,
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+    response: Record<string, any>,
+  ) {
+    try {
+      if (req.get('X-Auth-Method') === 'token') {
+        return {
+          accessToken,
+          refreshToken,
+          ...response,
+        };
+      }
+
+      // ✅ Native way to set cookies in NestJS
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: true, // Only for HTTPS
+        sameSite: 'strict', // CSRF protection
+      });
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+      });
+
+      // ✅ NestJS still sends a JSON response
+      return { ...response };
     } catch (error) {
       throw this.errorUtil.handleError(error);
     }
