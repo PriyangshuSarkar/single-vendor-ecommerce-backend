@@ -56,6 +56,15 @@ export class SessionUtil {
         },
       });
 
+      await this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          lastLoginAt: new Date(),
+        },
+      });
+
       return {
         accessToken,
         refreshToken, // Return raw refresh token
@@ -120,7 +129,10 @@ export class SessionUtil {
           tx.session.update({
             // Ensure correct type
             where: { id: sessionId },
-            data: { expiresAt: newExpiryDate },
+            data: {
+              expiresAt: newExpiryDate,
+              user: { update: { lastLoginAt: new Date() } },
+            },
             select: { id: true }, // Minimize data returned
           }),
           this.jwtUtil.sign({ userId: session.userId }),

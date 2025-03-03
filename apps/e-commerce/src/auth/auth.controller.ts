@@ -9,6 +9,7 @@ import {
   RefreshAccessTokenResponseDto,
   RegisterBodyDto,
   RegisterResponseDto,
+  ValidateAccessTokenResponseDto,
   VerifyOtpBodyDto,
   VerifyOtpResponseDto,
 } from '@app/dtos';
@@ -98,7 +99,7 @@ export class AuthController {
   @UseInterceptors(new TransformInterceptor(AddCredentialResponseDto))
   async addCredential(
     @Body() body: AddCredentialBodyDto, // This should only contain phone
-    @Auth() user, // This gets the JWT data from req.user
+    @Auth() user: ValidateAccessTokenResponseDto, // This gets the JWT data from req.user
   ) {
     return await this.authService.addCredential(body, user);
   }

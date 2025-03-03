@@ -7,6 +7,7 @@ import { CursorUtil, ErrorUtil, FileUtil } from './utils';
 import { Logger, LoggerModule } from '@app/logger';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService, ErrorUtil, FileUtil, Logger, CursorUtil],

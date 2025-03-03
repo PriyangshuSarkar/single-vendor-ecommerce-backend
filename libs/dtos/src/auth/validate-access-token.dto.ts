@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { Expose } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 
@@ -14,20 +15,15 @@ export class ValidateAccessTokenResponseDto {
   @Expose()
   @IsString()
   @IsOptional()
-  message?: string;
+  id?: string;
 
   @Expose()
   @IsString()
   @IsOptional()
-  accessToken?: string;
+  slug?: string;
 
   @Expose()
   @IsString()
   @IsOptional()
-  refreshToken?: string;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  sessionId?: string;
+  role?: Role;
 }

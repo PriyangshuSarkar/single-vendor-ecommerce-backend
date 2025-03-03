@@ -14,6 +14,7 @@ import {
   RegisterBodyDto,
   VerifyOtpPayloadDto,
   VerifyOtpBodyDto,
+  ValidateAccessTokenResponseDto,
 } from '@app/dtos';
 import { catchError, firstValueFrom, throwError } from 'rxjs';
 import { Request, Response } from 'express';
@@ -86,7 +87,10 @@ export class AuthService {
     }
   }
 
-  async addCredential(body: AddCredentialBodyDto, user) {
+  async addCredential(
+    body: AddCredentialBodyDto,
+    user: ValidateAccessTokenResponseDto,
+  ) {
     try {
       return await firstValueFrom(
         this.authClient

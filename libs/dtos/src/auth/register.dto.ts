@@ -1,5 +1,4 @@
 import { Optional } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { Expose } from 'class-transformer';
 import {
   IsDefined,
@@ -11,6 +10,12 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
+
+const Role = {
+  USER: 'USER',
+  VENDOR: 'VENDOR',
+} as const;
+type Role = (typeof Role)[keyof typeof Role];
 
 export class RegisterBodyDto {
   @IsOptional()
@@ -30,6 +35,12 @@ export class RegisterBodyDto {
   @IsString()
   @MinLength(1, { message: 'Name is required' })
   name: string;
+
+  @IsOptional()
+  @IsEnum(Role, {
+    message: `Must be of type ${JSON.stringify(Role) || Role}`,
+  })
+  role: Role;
 
   @ValidateIf((o) => !o.email && !o.phone)
   @IsDefined({ message: 'Either email or phone must be provided' })
@@ -61,7 +72,7 @@ export class RegisterPayloadDto {
 
   @IsOptional()
   @IsEnum(Role, {
-    message: `Must be of type ${JSON.stringify(Role)} or ${Role}`,
+    message: `Must be of type ${JSON.stringify(Role) || Role}`,
   })
   role: Role;
 

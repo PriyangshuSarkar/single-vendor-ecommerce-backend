@@ -16,7 +16,7 @@ import {
   SlugUtil,
   SessionUtil,
 } from './utils';
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import {
   AddCredentialPayloadDto,
   LoginPayloadDto,
@@ -78,7 +78,7 @@ export class AuthService {
             id: id,
             name: payload.name,
             password: hash,
-            role: payload.role,
+            role: payload.role as Role,
           },
         });
 
@@ -222,15 +222,6 @@ export class AuthService {
           payload.userAgent,
           payload.ipAddress,
         );
-
-      // console.log({
-      //   message: 'Login successful',
-      //   userId: existingUser.id,
-      //   userSlug: existingUser.slug,
-      //   accessToken,
-      //   refreshToken,
-      //   sessionId,
-      // });
 
       return {
         message: 'Login successful',

@@ -13,7 +13,8 @@ import { Observable, map } from 'rxjs';
 export class TransformInterceptor<T> implements NestInterceptor<T, any> {
   constructor(
     private readonly target: any,
-    private debug: boolean = process.env.DEBUG === 'true',
+    private readonly excludeExtraneousValues: boolean = true,
+    private readonly debug: boolean = process.env.DEBUG === 'true',
   ) {}
   private logger = new Logger();
 
@@ -23,7 +24,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, any> {
         let result: any | undefined = undefined;
         try {
           result = plainToInstance(this.target, data, {
-            excludeExtraneousValues: true,
+            excludeExtraneousValues: this.excludeExtraneousValues,
           });
 
           return result;
