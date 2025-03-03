@@ -1,7 +1,9 @@
+import { Role } from '@prisma/client';
 import { Expose } from 'class-transformer';
 import {
   IsDefined,
   IsEmail,
+  IsEnum,
   IsOptional,
   IsString,
   Matches,
@@ -80,6 +82,10 @@ export class LoginResponseDto {
   @IsString()
   @IsOptional()
   userSlug?: string;
+
+  @Expose()
+  @IsEnum(Role, { message: 'Invalid role' })
+  role: Role;
 
   @Expose()
   @IsString()

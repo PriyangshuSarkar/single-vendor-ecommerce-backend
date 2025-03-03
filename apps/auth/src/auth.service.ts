@@ -78,6 +78,7 @@ export class AuthService {
             id: id,
             name: payload.name,
             password: hash,
+            role: payload.role,
           },
         });
 
@@ -161,6 +162,7 @@ export class AuthService {
         await this.sessionUtil.createSession(
           user.id,
           user.slug,
+          user.role,
           payload.userAgent,
           payload.ipAddress,
         );
@@ -169,6 +171,7 @@ export class AuthService {
         message: 'Validation successful',
         userId: user.id,
         userSlug: user.slug,
+        role: user.role,
         accessToken,
         refreshToken,
         sessionId,
@@ -215,6 +218,7 @@ export class AuthService {
         await this.sessionUtil.createSession(
           existingUser.id,
           existingUser.slug,
+          existingUser.role,
           payload.userAgent,
           payload.ipAddress,
         );
@@ -232,6 +236,7 @@ export class AuthService {
         message: 'Login successful',
         userId: existingUser.id,
         userSlug: existingUser.slug,
+        role: existingUser.role,
         accessToken,
         refreshToken,
         sessionId,

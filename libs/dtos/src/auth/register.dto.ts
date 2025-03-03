@@ -1,8 +1,10 @@
 import { Optional } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { Expose } from 'class-transformer';
 import {
   IsDefined,
   IsEmail,
+  IsEnum,
   IsOptional,
   IsString,
   Matches,
@@ -56,6 +58,12 @@ export class RegisterPayloadDto {
   @IsString()
   @MinLength(1, { message: 'Name is required' })
   name: string;
+
+  @IsOptional()
+  @IsEnum(Role, {
+    message: `Must be of type ${JSON.stringify(Role)} or ${Role}`,
+  })
+  role: Role;
 
   @ValidateIf((o) => !o.email && !o.phone)
   @IsDefined({ message: 'Either email or phone must be provided' })

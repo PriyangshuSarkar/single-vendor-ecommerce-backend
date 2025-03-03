@@ -105,12 +105,17 @@ export class AuthService {
     }
   }
 
-  async refreshAccessToken(token: string, body: RefreshAccessTokenBodyDto) {
+  async refreshAccessToken(
+    token: string,
+    sessionId: string,
+    body: RefreshAccessTokenBodyDto,
+  ) {
     try {
       return await firstValueFrom(
         this.authClient
           .send({ cmd: 'auth_refresh_access_token' }, {
             token,
+            sessionId,
             ...body,
           } as RefreshAccessTokenPayloadDto)
           .pipe(
@@ -146,6 +151,7 @@ export class AuthService {
     res: Response,
     accessToken: string,
     refreshToken: string,
+    sessionId: string,
     response: Record<string, any>,
   ) {
     try {
@@ -164,6 +170,11 @@ export class AuthService {
         sameSite: 'strict', // CSRF protection
       });
       res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+      });
+      res.cookie('session_id', sessionId, {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',

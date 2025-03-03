@@ -21,6 +21,7 @@ export class SessionUtil {
   async createSession(
     userId: string,
     userSlug: string,
+    userRole: string,
     userAgent?: string,
     ipAddress?: string,
   ) {
@@ -28,6 +29,7 @@ export class SessionUtil {
       const accessToken = await this.jwtUtil.sign({
         id: userId,
         slug: userSlug,
+        role: userRole,
       });
 
       const refreshToken = uuid.v7(); // Generate a unique refresh token

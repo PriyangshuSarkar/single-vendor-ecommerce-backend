@@ -54,7 +54,7 @@ export class AuthController {
       req.socket.remoteAddress ||
       undefined;
 
-    const { accessToken, refreshToken, ...response } =
+    const { accessToken, refreshToken, sessionId, ...response } =
       await this.authService.verifyOtp(body, userAgent, ipAddress);
 
     return this.authService.handleAuthResponse(
@@ -62,6 +62,7 @@ export class AuthController {
       res,
       accessToken,
       refreshToken,
+      sessionId,
       response,
     );
   }
@@ -79,7 +80,7 @@ export class AuthController {
       req.socket.remoteAddress ||
       undefined;
 
-    const { accessToken, refreshToken, ...response } =
+    const { accessToken, refreshToken, sessionId, ...response } =
       await this.authService.login(body, userAgent, ipAddress);
 
     return this.authService.handleAuthResponse(
@@ -87,6 +88,7 @@ export class AuthController {
       res,
       accessToken,
       refreshToken,
+      sessionId,
       response,
     );
   }
@@ -101,13 +103,16 @@ export class AuthController {
     return await this.authService.addCredential(body, user);
   }
 
-  @Patch('/refresh_access_token')
+  @Patch('/refresh-access-token')
   @UseInterceptors(new TransformInterceptor(RefreshAccessTokenResponseDto))
   async refreshAccessToken(
     @Req() req: Request,
     @Body() body: RefreshAccessTokenBodyDto,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const session =
+      (req.headers['x-session-id'] as string) || req.cookies?.session_id;
+
     const token =
       (req.headers['x-refresh-token'] as string) || req.cookies?.refresh_token;
 
@@ -115,14 +120,15 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const { accessToken, refreshToken, ...response } =
-      await this.authService.refreshAccessToken(token, body);
+    const { accessToken, refreshToken, sessionId, ...response } =
+      await this.authService.refreshAccessToken(token, session, body);
 
     return this.authService.handleAuthResponse(
       req,
       res,
       accessToken,
       refreshToken,
+      sessionId,
       response,
     );
   }

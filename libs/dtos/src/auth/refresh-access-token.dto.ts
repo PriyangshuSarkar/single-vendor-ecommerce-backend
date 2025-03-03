@@ -2,9 +2,6 @@ import { Expose } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 
 export class RefreshAccessTokenBodyDto {
-  @IsString()
-  sessionId: string;
-
   @IsOptional()
   @IsString()
   userId?: string;
