@@ -2,16 +2,12 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  UnauthorizedException,
   Inject,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { catchError, firstValueFrom, throwError } from 'rxjs';
 import { ErrorUtil } from '../utils';
-import {
-  ValidateAccessTokenPayloadDto,
-  ValidateAccessTokenResponseDto,
-} from '@app/dtos';
+import { ValidateAccessTokenPayloadDto } from '@app/dtos';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
@@ -71,25 +67,9 @@ export class AuthGuard implements CanActivate {
             ),
         );
 
-        // ✅ Validate response using Zod before attaching to request
-
-        const parsedResponse =
-          ValidateAccessTokenResponseDto.safeParse(response);
-        if (!parsedResponse.success) {
-          throw new UnauthorizedException(
-            'Invalid authentication response format',
-          );
-        }
-
-        req.user = parsedResponse.data; // Attach validated user to request
+        req.user = response; // Attach validated user to request
       } else {
-        const parsedResponse =
-          ValidateAccessTokenResponseDto.safeParse(decoded);
-        if (!parsedResponse.success) {
-          throw new UnauthorizedException('Invalid authentication token');
-        }
-
-        req.user = parsedResponse.data; // Attach validated user to data
+        req.user = decoded; // Attach validated user to data
       }
       return true;
     } catch (error) {

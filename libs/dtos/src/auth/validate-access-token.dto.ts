@@ -1,32 +1,33 @@
-import { z } from 'zod';
+import { Expose } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 
-// ✅ Validate Token Request Schema (Zod)
-export const ValidateAccessTokenRequestBodyDto = z.object({});
+export class ValidateAccessTokenBodyDto {
+  // No fields required, so this is an empty DTO
+}
 
-// ✅ TypeScript Type Inference for Request DTO
-export type ValidateAccessTokenRequestBodyDto = z.infer<
-  typeof ValidateAccessTokenRequestBodyDto
->;
+export class ValidateAccessTokenPayloadDto {
+  @IsString()
+  token: string;
+}
 
-// ✅ Validate Token Request Schema (Zod)
-export const ValidateAccessTokenPayloadDto = z.object({
-  token: z.string(),
-});
+export class ValidateAccessTokenResponseDto {
+  @Expose()
+  @IsString()
+  @IsOptional()
+  message?: string;
 
-// ✅ TypeScript Type Inference for Request DTO
-export type ValidateAccessTokenPayloadDto = z.infer<
-  typeof ValidateAccessTokenPayloadDto
->;
+  @Expose()
+  @IsString()
+  @IsOptional()
+  accessToken?: string;
 
-// ✅ Validate Token Response Schema (Zod)
-export const ValidateAccessTokenResponseDto = z
-  .object({
-    id: z.string().optional(),
-    slug: z.string().optional(),
-  })
-  .optional();
+  @Expose()
+  @IsString()
+  @IsOptional()
+  refreshToken?: string;
 
-// ✅ TypeScript Type Inference for Response DTO
-export type ValidateAccessTokenResponseDto = z.infer<
-  typeof ValidateAccessTokenResponseDto
->;
+  @Expose()
+  @IsString()
+  @IsOptional()
+  sessionId?: string;
+}

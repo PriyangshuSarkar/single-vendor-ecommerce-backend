@@ -1,8 +1,7 @@
-import { Controller, UseInterceptors, UsePipes } from '@nestjs/common';
+import { Controller, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { ZodBodyValidationPipe } from '@app/pipes/zod';
-import { ZodResponseInterceptor } from '@app/interceptors/zod';
+
 import {
   AddCredentialPayloadDto,
   AddCredentialResponseDto,
@@ -13,41 +12,38 @@ import {
   RefreshAccessTokenPayloadDto,
   RefreshAccessTokenResponseDto,
   RegisterPayloadDto,
-  // RegisterResponseDto,
+  RegisterResponseDto,
   ValidateAccessTokenPayloadDto,
   ValidateAccessTokenResponseDto,
   VerifyOtpPayloadDto,
   VerifyOtpResponseDto,
 } from '@app/dtos';
+import { TransformInterceptor } from '@app/interceptors/transform.interceptor';
 
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @MessagePattern({ cmd: 'auth_register' })
-  // @UsePipes(new ZodBodyValidationPipe(RegisterPayloadDto))
-  // @UseInterceptors(new ZodResponseInterceptor(RegisterResponseDto))
+  @UseInterceptors(new TransformInterceptor(RegisterResponseDto))
   async register(@Payload() payload: RegisterPayloadDto) {
     return await this.authService.register(payload);
   }
 
   @MessagePattern({ cmd: 'auth_verify_otp' })
-  @UsePipes(new ZodBodyValidationPipe(VerifyOtpPayloadDto))
-  @UseInterceptors(new ZodResponseInterceptor(VerifyOtpResponseDto))
+  @UseInterceptors(new TransformInterceptor(VerifyOtpResponseDto))
   async verifyOtp(@Payload() payload: VerifyOtpPayloadDto) {
     return await this.authService.verifyOtp(payload);
   }
 
   @MessagePattern({ cmd: 'auth_login' })
-  @UsePipes(new ZodBodyValidationPipe(LoginPayloadDto))
-  @UseInterceptors(new ZodResponseInterceptor(LoginResponseDto))
+  @UseInterceptors(new TransformInterceptor(LoginResponseDto))
   async login(@Payload() payload: LoginPayloadDto) {
     return await this.authService.login(payload);
   }
 
   @MessagePattern({ cmd: 'auth_add_credential' })
-  @UsePipes(new ZodBodyValidationPipe(AddCredentialPayloadDto))
-  @UseInterceptors(new ZodResponseInterceptor(AddCredentialResponseDto))
+  @UseInterceptors(new TransformInterceptor(AddCredentialResponseDto))
   async addCredential(
     @Payload()
     payload: AddCredentialPayloadDto,
@@ -56,16 +52,14 @@ export class AuthController {
   }
 
   @MessagePattern({ cmd: 'auth_validate_access_token' })
-  @UsePipes(new ZodBodyValidationPipe(ValidateAccessTokenPayloadDto))
-  @UseInterceptors(new ZodResponseInterceptor(ValidateAccessTokenResponseDto))
+  @UseInterceptors(new TransformInterceptor(ValidateAccessTokenResponseDto))
   async validateAccessToken(@Payload() payload: ValidateAccessTokenPayloadDto) {
     const test = await this.authService.validateAccessToken(payload);
     return test;
   }
 
   @MessagePattern({ cmd: 'auth_refresh_access_token' })
-  @UsePipes(new ZodBodyValidationPipe(RefreshAccessTokenPayloadDto))
-  @UseInterceptors(new ZodResponseInterceptor(RefreshAccessTokenResponseDto))
+  @UseInterceptors(new TransformInterceptor(RefreshAccessTokenResponseDto))
   async refreshAccessToken(
     @Payload()
     payload: RefreshAccessTokenPayloadDto,
@@ -74,8 +68,7 @@ export class AuthController {
   }
 
   @MessagePattern({ cmd: 'auth_logout' })
-  @UsePipes(new ZodBodyValidationPipe(LogoutPayloadDto))
-  @UseInterceptors(new ZodResponseInterceptor(LogoutResponseDto))
+  @UseInterceptors(new TransformInterceptor(LogoutResponseDto))
   async logout(
     @Payload()
     payload: LogoutPayloadDto,

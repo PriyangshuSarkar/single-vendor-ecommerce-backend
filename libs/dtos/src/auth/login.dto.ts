@@ -1,49 +1,98 @@
-import { z } from 'zod';
+import { Expose } from 'class-transformer';
+import {
+  IsDefined,
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+  ValidateIf,
+} from 'class-validator';
 
-export const LoginRequestBodyDto = z
-  .object({
-    email: z.string().trim().email().optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,3}\d{10}$/)
-      .optional(),
-    password: z.string().min(6),
-  })
-  .refine((data) => data.email || data.phone, {
-    message: 'Either email or phone must be provided',
-    path: ['email', 'phone'],
-  });
+export class LoginBodyDto {
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  email?: string;
 
-export type LoginRequestBodyDto = z.infer<typeof LoginRequestBodyDto>;
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+\d{1,3}\d{10}$/, { message: 'Invalid phone number format' })
+  phone?: string;
 
-export const LoginPayloadDto = z
-  .object({
-    email: z.string().trim().email().optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,3}\d{10}$/)
-      .optional(),
-    password: z.string().min(6),
-    ipAddress: z.string().trim().optional(),
-    userAgent: z.string().trim().optional(),
-  })
-  .refine((data) => data.email || data.phone, {
-    message: 'Either email or phone must be provided',
-    path: ['email', 'phone'],
-  });
+  @IsString()
+  @MinLength(6)
+  password: string;
 
-export type LoginPayloadDto = z.infer<typeof LoginPayloadDto>;
+  @ValidateIf((o) => !o.email && !o.phone)
+  @IsDefined({ message: 'Either email or phone must be provided' })
+  _validateContactExists?: never;
 
-// ✅ Verify OTP Response Schema (Zod)
-export const LoginResponseDto = z.object({
-  message: z.string(),
-  userId: z.string().optional(),
-  userSlug: z.string().optional(),
-  accessToken: z.string().optional(),
-  refreshToken: z.string().optional(),
-  sessionId: z.string().optional(),
-});
-// ✅ TypeScript Type Inference for Response DTO
-export type LoginResponseDto = z.infer<typeof LoginResponseDto>;
+  @ValidateIf((o) => o.email && o.phone)
+  @IsDefined({ message: 'Provide either email or phone, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
+
+export class LoginPayloadDto {
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+\d{1,3}\d{10}$/, { message: 'Invalid phone number format' })
+  phone?: string;
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+
+  @IsOptional()
+  @IsString()
+  ipAddress?: string;
+
+  @IsOptional()
+  @IsString()
+  userAgent?: string;
+
+  @ValidateIf((o) => !o.email && !o.phone)
+  @IsDefined({ message: 'Either email or phone must be provided' })
+  _validateContactExists?: never;
+
+  @ValidateIf((o) => o.email && o.phone)
+  @IsDefined({ message: 'Provide either email or phone, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
+
+export class LoginResponseDto {
+  @Expose()
+  @IsString()
+  @IsOptional()
+  message?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  userId?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  userSlug?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  accessToken?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  refreshToken?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  sessionId?: string;
+}

@@ -1,48 +1,74 @@
-import { z } from 'zod';
+import { Optional } from '@nestjs/common';
+import { Expose } from 'class-transformer';
+import {
+  IsDefined,
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+  ValidateIf,
+} from 'class-validator';
 
-// ✅ Signup Request Schema (Zod)
-export const RegisterRequestBodyDto = z
-  .object({
-    email: z.string().trim().email().optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,3}\d{10}$/)
-      .optional(),
-    password: z.string().min(6, 'Password must be at least 6 characters long'),
-    name: z.string().trim().min(1, 'Name is required'),
-  })
-  .refine((data) => data.email || data.phone, {
-    message: 'Either email or phone must be provided',
-    path: ['email', 'phone'],
-  });
+export class RegisterBodyDto {
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  email?: string;
 
-// ✅ TypeScript Type Inference
-export type RegisterRequestBodyDto = z.infer<typeof RegisterRequestBodyDto>;
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+\d{1,3}\d{10}$/, { message: 'Invalid phone number format' })
+  phone?: string;
 
-export const RegisterPayloadDto = z
-  .object({
-    email: z.string().trim().email().optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,3}\d{10}$/)
-      .optional(),
-    password: z.string().min(6, 'Password must be at least 6 characters long'),
-    name: z.string().trim().min(1, 'Name is required'),
-  })
-  .refine((data) => data.email || data.phone, {
-    message: 'Either email or phone must be provided',
-    path: ['email', 'phone'],
-  });
+  @IsString()
+  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  password: string;
 
-// ✅ TypeScript Type Inference
-export type RegisterPayloadDto = z.infer<typeof RegisterPayloadDto>;
+  @IsString()
+  @MinLength(1, { message: 'Name is required' })
+  name: string;
 
-// ✅ Signup Response Schema (Zod)
-export const RegisterResponseDto = z.object({
-  message: z.string(),
-});
+  @ValidateIf((o) => !o.email && !o.phone)
+  @IsDefined({ message: 'Either email or phone must be provided' })
+  _validateContactExists?: never;
 
-// ✅ TypeScript Type for Response
-export type RegisterResponseDto = z.infer<typeof RegisterResponseDto>;
+  @ValidateIf((o) => o.email && o.phone)
+  @IsDefined({ message: 'Provide either email or phone, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
+
+export class RegisterPayloadDto {
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+\d{1,3}\d{10}$/, { message: 'Invalid phone number format' })
+  phone?: string;
+
+  @IsString()
+  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  password: string;
+
+  @IsString()
+  @MinLength(1, { message: 'Name is required' })
+  name: string;
+
+  @ValidateIf((o) => !o.email && !o.phone)
+  @IsDefined({ message: 'Either email or phone must be provided' })
+  _validateContactExists?: never;
+
+  @ValidateIf((o) => o.email && o.phone)
+  @IsDefined({ message: 'Provide either email or phone, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
+
+export class RegisterResponseDto {
+  @Expose()
+  @IsString()
+  @Optional()
+  message?: string;
+}

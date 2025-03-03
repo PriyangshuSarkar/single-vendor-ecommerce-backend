@@ -219,6 +219,15 @@ export class AuthService {
           payload.ipAddress,
         );
 
+      // console.log({
+      //   message: 'Login successful',
+      //   userId: existingUser.id,
+      //   userSlug: existingUser.slug,
+      //   accessToken,
+      //   refreshToken,
+      //   sessionId,
+      // });
+
       return {
         message: 'Login successful',
         userId: existingUser.id,
@@ -325,6 +334,7 @@ export class AuthService {
         accessToken,
         refreshToken,
         sessionId: id,
+        test: 'test',
       };
     } catch (error) {
       this.errorUtil.handleError(error);

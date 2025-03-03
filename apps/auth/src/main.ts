@@ -3,6 +3,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AuthModule } from './auth.module';
 import { Logger } from '@app/logger';
 import { LoggingInterceptor } from './logger/logger.interceptor';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const host = process.env.AUTH_HOST || '127.0.0.1';
@@ -16,6 +17,14 @@ async function bootstrap() {
         port,
       },
     },
+  );
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strips unknown properties
+      forbidNonWhitelisted: true, // Rejects unknown properties
+      transform: true, // Automatically transforms payloads to DTO instances
+    }),
   );
 
   app.useGlobalInterceptors(new LoggingInterceptor(new Logger()));

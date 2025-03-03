@@ -1,9 +1,9 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@app/logger';
 import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,10 +17,13 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-
-  // 🔥 Enables automatic response transformation (native NestJS way)
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strips unknown properties
+      forbidNonWhitelisted: true, // Rejects unknown properties
+      transform: true, // Automatically transforms payloads to DTO instances
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('E-commerce API')

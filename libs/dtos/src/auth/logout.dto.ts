@@ -1,32 +1,45 @@
-import { z } from 'zod';
+import { Expose } from 'class-transformer';
+import { IsDefined, IsOptional, IsString, ValidateIf } from 'class-validator';
 
-export const LogoutRequestBodyDto = z
-  .object({
-    sessionId: z.string().optional(),
-    userId: z.string().optional(),
-  })
-  .refine((data) => data.sessionId || data.userId, {
-    message: 'Either sessionId or userId must be provided',
-    path: ['sessionId', 'userId'],
-  });
+export class LogoutBodyDto {
+  @IsOptional()
+  @IsString()
+  sessionId?: string;
 
-export type LogoutRequestBodyDto = z.infer<typeof LogoutRequestBodyDto>;
+  @IsOptional()
+  @IsString()
+  userId?: string;
 
-export const LogoutPayloadDto = z
-  .object({
-    sessionId: z.string().optional(),
-    userId: z.string().optional(),
-  })
-  .refine((data) => data.sessionId || data.userId, {
-    message: 'Either sessionId or userId must be provided',
-    path: ['sessionId', 'userId'],
-  });
+  @ValidateIf((o) => !o.sessionId && !o.userId)
+  @IsDefined({ message: 'Either sessionId or userId must be provided' })
+  _validateContactExists?: never;
 
-export type LogoutPayloadDto = z.infer<typeof LogoutPayloadDto>;
+  @ValidateIf((o) => o.sessionId && o.userId)
+  @IsDefined({ message: 'Provide either sessionId or userId, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
 
-// ✅ Verify OTP Response Schema (Zod)
-export const LogoutResponseDto = z.object({
-  message: z.string(),
-});
-// ✅ TypeScript Type Inference for Response DTO
-export type LogoutResponseDto = z.infer<typeof LogoutResponseDto>;
+export class LogoutPayloadDto {
+  @IsOptional()
+  @IsString()
+  sessionId?: string;
+
+  @IsOptional()
+  @IsString()
+  userId?: string;
+
+  @ValidateIf((o) => !o.sessionId && !o.userId)
+  @IsDefined({ message: 'Either sessionId or userId must be provided' })
+  _validateContactExists?: never;
+
+  @ValidateIf((o) => o.sessionId && o.userId)
+  @IsDefined({ message: 'Provide either sessionId or userId, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
+
+export class LogoutResponseDto {
+  @Expose()
+  @IsString()
+  @IsOptional()
+  message?: string;
+}

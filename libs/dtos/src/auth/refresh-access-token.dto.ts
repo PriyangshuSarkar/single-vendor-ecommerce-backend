@@ -1,37 +1,45 @@
-import { z } from 'zod';
+import { Expose } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 
-// ✅ Validate Token Request Schema (Zod)
-export const RefreshAccessTokenRequestBodyDto = z.object({
-  sessionId: z.string(),
-  userId: z.string().optional(),
-});
+export class RefreshAccessTokenBodyDto {
+  @IsString()
+  sessionId: string;
 
-// ✅ TypeScript Type Inference for Request DTO
-export type RefreshAccessTokenRequestBodyDto = z.infer<
-  typeof RefreshAccessTokenRequestBodyDto
->;
+  @IsOptional()
+  @IsString()
+  userId?: string;
+}
 
-// ✅ Validate Token Request Schema (Zod)
-export const RefreshAccessTokenPayloadDto = z.object({
-  token: z.string(),
-  sessionId: z.string(),
-  userId: z.string().optional(),
-});
+export class RefreshAccessTokenPayloadDto {
+  @IsString()
+  token: string;
 
-// ✅ TypeScript Type Inference for Request DTO
-export type RefreshAccessTokenPayloadDto = z.infer<
-  typeof RefreshAccessTokenPayloadDto
->;
+  @IsString()
+  sessionId: string;
 
-// ✅ Validate Token Response Schema (Zod)
-export const RefreshAccessTokenResponseDto = z.object({
-  message: z.string(),
-  accessToken: z.string().optional(),
-  refreshToken: z.string().optional(),
-  sessionId: z.string().optional(),
-});
+  @IsOptional()
+  @IsString()
+  userId?: string;
+}
 
-// ✅ TypeScript Type Inference for Response DTO
-export type RefreshAccessTokenResponseDto = z.infer<
-  typeof RefreshAccessTokenResponseDto
->;
+export class RefreshAccessTokenResponseDto {
+  @Expose()
+  @IsString()
+  @IsOptional()
+  message?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  accessToken?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  refreshToken?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  sessionId?: string;
+}

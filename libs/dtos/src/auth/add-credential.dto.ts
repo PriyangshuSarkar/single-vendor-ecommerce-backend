@@ -1,44 +1,59 @@
-import { z } from 'zod';
+import { Expose } from 'class-transformer';
+import {
+  IsDefined,
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  ValidateIf,
+} from 'class-validator';
 
-export const AddCredentialRequestBodyDto = z
-  .object({
-    email: z.string().trim().email().optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,3}\d{7,14}$/, 'Invalid phone number format')
-      .optional(),
-  })
-  .refine((data) => data.email || data.phone, {
-    message: 'Either email or phone must be provided',
-    path: ['email', 'phone'],
-  });
+export class AddCredentialBodyDto {
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  email?: string;
 
-export type AddCredentialRequestBodyDto = z.infer<
-  typeof AddCredentialRequestBodyDto
->;
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+\d{1,3}\d{7,14}$/, { message: 'Invalid phone number format' })
+  phone?: string;
 
-export const AddCredentialPayloadDto = z
-  .object({
-    id: z.string().trim(),
-    email: z.string().trim().email().optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,3}\d{7,14}$/, 'Invalid phone number format')
-      .optional(),
-  })
-  .refine((data) => data.email || data.phone, {
-    message: 'Either email or phone must be provided',
-    path: ['email', 'phone'],
-  });
+  @ValidateIf((o) => !o.email && !o.phone)
+  @IsDefined({ message: 'Either email or phone must be provided' })
+  _validateContactExists?: never;
 
-export type AddCredentialPayloadDto = z.infer<typeof AddCredentialPayloadDto>;
+  @ValidateIf((o) => o.email && o.phone)
+  @IsDefined({ message: 'Provide either email or phone, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
 
-// ✅ Verify OTP Response Schema (Zod)
-export const AddCredentialResponseDto = z.object({
-  message: z.string(),
-});
+export class AddCredentialPayloadDto {
+  @IsString()
+  id: string;
 
-// ✅ TypeScript Type Inference for Response DTO
-export type AddCredentialResponseDto = z.infer<typeof AddCredentialResponseDto>;
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+\d{1,3}\d{7,14}$/, { message: 'Invalid phone number format' })
+  phone?: string;
+
+  @ValidateIf((o) => !o.email && !o.phone)
+  @IsDefined({ message: 'Either email or phone must be provided' })
+  _validateContactExists?: never;
+
+  @ValidateIf((o) => o.email && o.phone)
+  @IsDefined({ message: 'Provide either email or phone, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
+
+export class AddCredentialResponseDto {
+  @Expose()
+  @IsString()
+  @IsOptional()
+  message?: string;
+}

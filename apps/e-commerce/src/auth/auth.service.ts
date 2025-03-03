@@ -3,18 +3,17 @@ import { ClientProxy } from '@nestjs/microservices';
 import { ErrorUtil } from '../utils';
 import {
   AddCredentialPayloadDto,
-  AddCredentialRequestBodyDto,
+  AddCredentialBodyDto,
   LoginPayloadDto,
-  LoginRequestBodyDto,
+  LoginBodyDto,
   LogoutPayloadDto,
-  LogoutRequestBodyDto,
+  LogoutBodyDto,
   RefreshAccessTokenPayloadDto,
-  RefreshAccessTokenRequestBodyDto,
+  RefreshAccessTokenBodyDto,
   RegisterPayloadDto,
-  RegisterRequestBodyDto,
-  ValidateAccessTokenResponseDto,
+  RegisterBodyDto,
   VerifyOtpPayloadDto,
-  VerifyOtpRequestBodyDto,
+  VerifyOtpBodyDto,
 } from '@app/dtos';
 import { catchError, firstValueFrom, throwError } from 'rxjs';
 import { Request, Response } from 'express';
@@ -27,7 +26,7 @@ export class AuthService {
     private readonly errorUtil: ErrorUtil,
   ) {}
 
-  async register(body: RegisterRequestBodyDto) {
+  async register(body: RegisterBodyDto) {
     try {
       return await firstValueFrom(
         this.authClient
@@ -44,7 +43,7 @@ export class AuthService {
   }
 
   async verifyOtp(
-    body: VerifyOtpRequestBodyDto,
+    body: VerifyOtpBodyDto,
     userAgent?: string,
     ipAddress?: string,
   ) {
@@ -67,11 +66,7 @@ export class AuthService {
     }
   }
 
-  async login(
-    body: LoginRequestBodyDto,
-    userAgent?: string,
-    ipAddress?: string,
-  ) {
+  async login(body: LoginBodyDto, userAgent?: string, ipAddress?: string) {
     try {
       return await firstValueFrom(
         this.authClient
@@ -91,10 +86,7 @@ export class AuthService {
     }
   }
 
-  async addCredential(
-    body: AddCredentialRequestBodyDto,
-    user: ValidateAccessTokenResponseDto,
-  ) {
+  async addCredential(body: AddCredentialBodyDto, user) {
     try {
       return await firstValueFrom(
         this.authClient
@@ -113,10 +105,7 @@ export class AuthService {
     }
   }
 
-  async refreshAccessToken(
-    token: string,
-    body: RefreshAccessTokenRequestBodyDto,
-  ) {
+  async refreshAccessToken(token: string, body: RefreshAccessTokenBodyDto) {
     try {
       return await firstValueFrom(
         this.authClient
@@ -136,7 +125,7 @@ export class AuthService {
     }
   }
 
-  async logout(body: LogoutRequestBodyDto) {
+  async logout(body: LogoutBodyDto) {
     try {
       return await firstValueFrom(
         this.authClient

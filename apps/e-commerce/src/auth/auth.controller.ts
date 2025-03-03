@@ -1,16 +1,15 @@
 import {
-  AddCredentialRequestBodyDto,
+  AddCredentialBodyDto,
   AddCredentialResponseDto,
-  LoginRequestBodyDto,
+  LoginBodyDto,
   LoginResponseDto,
-  LogoutRequestBodyDto,
+  LogoutBodyDto,
   LogoutResponseDto,
-  RefreshAccessTokenRequestBodyDto,
+  RefreshAccessTokenBodyDto,
   RefreshAccessTokenResponseDto,
-  RegisterRequestBodyDto,
+  RegisterBodyDto,
   RegisterResponseDto,
-  ValidateAccessTokenResponseDto,
-  VerifyOtpRequestBodyDto,
+  VerifyOtpBodyDto,
   VerifyOtpResponseDto,
 } from '@app/dtos';
 import {
@@ -24,33 +23,29 @@ import {
   UnauthorizedException,
   UseGuards,
   UseInterceptors,
-  UsePipes,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { ZodBodyValidationPipe } from '@app/pipes/zod';
-import { ZodResponseInterceptor } from '@app/interceptors/zod';
 
 import { Auth } from './auth.decorator';
 import { AuthGuard } from './auth.guard';
+import { TransformInterceptor } from '@app/interceptors/transform.interceptor';
 
 @Controller('/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/register')
-  @UsePipes(new ZodBodyValidationPipe(RegisterRequestBodyDto))
-  @UseInterceptors(new ZodResponseInterceptor(RegisterResponseDto))
-  async register(@Body() body: RegisterRequestBodyDto) {
+  @UseInterceptors(new TransformInterceptor(RegisterResponseDto))
+  async register(@Body() body: RegisterBodyDto) {
     return await this.authService.register(body);
   }
 
   @Post('/verify-otp')
-  @UsePipes(new ZodBodyValidationPipe(VerifyOtpRequestBodyDto))
-  @UseInterceptors(new ZodResponseInterceptor(VerifyOtpResponseDto))
+  @UseInterceptors(new TransformInterceptor(VerifyOtpResponseDto))
   async verifyOtp(
     @Req() req: Request,
-    @Body() body: VerifyOtpRequestBodyDto,
+    @Body() body: VerifyOtpBodyDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const userAgent = req.headers['user-agent'] || undefined;
@@ -72,11 +67,10 @@ export class AuthController {
   }
 
   @Post('/login')
-  @UsePipes(new ZodBodyValidationPipe(LoginRequestBodyDto))
-  @UseInterceptors(new ZodResponseInterceptor(LoginResponseDto))
+  @UseInterceptors(new TransformInterceptor(LoginResponseDto))
   async login(
     @Req() req: Request,
-    @Body() body: LoginRequestBodyDto,
+    @Body() body: LoginBodyDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const userAgent = req.headers['user-agent'] || undefined;
@@ -99,21 +93,19 @@ export class AuthController {
 
   @Post('/add-credential')
   @UseGuards(AuthGuard)
-  @UsePipes(new ZodBodyValidationPipe(AddCredentialRequestBodyDto))
-  @UseInterceptors(new ZodResponseInterceptor(AddCredentialResponseDto))
+  @UseInterceptors(new TransformInterceptor(AddCredentialResponseDto))
   async addCredential(
-    @Body() body: AddCredentialRequestBodyDto, // This should only contain phone
-    @Auth() user: ValidateAccessTokenResponseDto, // This gets the JWT data from req.user
+    @Body() body: AddCredentialBodyDto, // This should only contain phone
+    @Auth() user, // This gets the JWT data from req.user
   ) {
     return await this.authService.addCredential(body, user);
   }
 
   @Patch('/refresh_access_token')
-  @UsePipes(new ZodBodyValidationPipe(RefreshAccessTokenRequestBodyDto))
-  @UseInterceptors(new ZodResponseInterceptor(RefreshAccessTokenResponseDto))
+  @UseInterceptors(new TransformInterceptor(RefreshAccessTokenResponseDto))
   async refreshAccessToken(
     @Req() req: Request,
-    @Body() body: RefreshAccessTokenRequestBodyDto,
+    @Body() body: RefreshAccessTokenBodyDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const token =
@@ -136,9 +128,8 @@ export class AuthController {
   }
 
   @Delete('/logout')
-  @UsePipes(new ZodBodyValidationPipe(LogoutRequestBodyDto))
-  @UseInterceptors(new ZodResponseInterceptor(LogoutResponseDto))
-  async logout(@Body() body: LogoutRequestBodyDto) {
+  @UseInterceptors(new TransformInterceptor(LogoutResponseDto))
+  async logout(@Body() body: LogoutBodyDto) {
     return await this.authService.logout(body);
   }
 }

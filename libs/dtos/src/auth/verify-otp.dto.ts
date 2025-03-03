@@ -1,54 +1,98 @@
-import { z } from 'zod';
+import { Expose } from 'class-transformer';
+import {
+  IsDefined,
+  IsEmail,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+  ValidateIf,
+} from 'class-validator';
 
-// ✅ Verify OTP Request Schema (Zod)
-export const VerifyOtpRequestBodyDto = z
-  .object({
-    email: z.string().trim().email().optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,3}\d{10}$/)
-      .optional(),
-    otp: z.string().length(6, 'OTP must be exactly 6 digits'),
-  })
-  .refine((data) => (data.email ? !data.phone : data.phone), {
-    message: 'Either email or phone must be provided, but not both.',
-    path: ['email', 'phone'], // Affects both fields in error messages
-  });
+export class VerifyOtpBodyDto {
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  email?: string;
 
-// ✅ TypeScript Type Inference for Request DTO
-export type VerifyOtpRequestBodyDto = z.infer<typeof VerifyOtpRequestBodyDto>;
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+\d{1,3}\d{10}$/, { message: 'Invalid phone number format' })
+  phone?: string;
 
-// ✅ Verify OTP Request Schema (Zod)
-export const VerifyOtpPayloadDto = z
-  .object({
-    email: z.string().trim().email().optional(),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,3}\d{10}$/)
-      .optional(),
-    otp: z.string().length(6, 'OTP must be exactly 6 digits'),
-    ipAddress: z.string().trim().optional(),
-    userAgent: z.string().trim().optional(),
-  })
-  .refine((data) => (data.email ? !data.phone : data.phone), {
-    message: 'Either email or phone must be provided, but not both.',
-    path: ['email', 'phone'], // Affects both fields in error messages
-  });
+  @IsString()
+  @Length(6, 6, { message: 'OTP must be exactly 6 digits' })
+  otp: string;
 
-// ✅ TypeScript Type Inference for Request DTO
-export type VerifyOtpPayloadDto = z.infer<typeof VerifyOtpPayloadDto>;
+  @ValidateIf((o) => !o.email && !o.phone)
+  @IsDefined({ message: 'Either email or phone must be provided' })
+  _validateContactExists?: never;
 
-// ✅ Verify OTP Response Schema (Zod)
-export const VerifyOtpResponseDto = z.object({
-  message: z.string(),
-  userId: z.string().optional(),
-  userSlug: z.string().optional(),
-  accessToken: z.string().optional(),
-  refreshToken: z.string().optional(),
-  sessionId: z.string().optional(),
-});
+  @ValidateIf((o) => o.email && o.phone)
+  @IsDefined({ message: 'Provide either email or phone, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
 
-// ✅ TypeScript Type Inference for Response DTO
-export type VerifyOtpResponseDto = z.infer<typeof VerifyOtpResponseDto>;
+export class VerifyOtpPayloadDto {
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+\d{1,3}\d{10}$/, { message: 'Invalid phone number format' })
+  phone?: string;
+
+  @IsString()
+  @Length(6, 6, { message: 'OTP must be exactly 6 digits' })
+  otp: string;
+
+  @IsOptional()
+  @IsString()
+  ipAddress?: string;
+
+  @IsOptional()
+  @IsString()
+  userAgent?: string;
+
+  @ValidateIf((o) => !o.email && !o.phone)
+  @IsDefined({ message: 'Either email or phone must be provided' })
+  _validateContactExists?: never;
+
+  @ValidateIf((o) => o.email && o.phone)
+  @IsDefined({ message: 'Provide either email or phone, but not both' })
+  _validateContactMutuallyExclusive?: never;
+}
+
+export class VerifyOtpResponseDto {
+  @Expose()
+  @IsString()
+  @IsOptional()
+  message?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  userId?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  userSlug?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  accessToken?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  refreshToken?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  sessionId?: string;
+}
