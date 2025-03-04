@@ -88,6 +88,7 @@ export class AuthService {
             user.id,
             payload.email,
             'EMAIL',
+            true,
           );
         }
         if (payload.phone) {
@@ -96,6 +97,7 @@ export class AuthService {
             user.id,
             payload.phone,
             'PHONE',
+            true,
           );
         }
 

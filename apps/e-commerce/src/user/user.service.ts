@@ -173,7 +173,7 @@ export class UserService {
     }
   }
 
-  private async userExists(id: string) {
+  public async userExists(id: string) {
     try {
       const user = await this.prisma.user.findFirst({
         where: { OR: [{ id }, { slug: id }], deletedAt: null },

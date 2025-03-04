@@ -18,6 +18,7 @@ export class CredentialUtil {
     userId: string,
     value: string,
     type: CredentialType,
+    isPrimary: boolean = false, // Correct default value assignment
   ) {
     try {
       const { otp, otpExpiresAt } = await this.otpUtil.createOtpData(
@@ -32,7 +33,7 @@ export class CredentialUtil {
           otp,
           otpExpiresAt,
           isVerified: false,
-          isPrimary: true,
+          isPrimary,
           verifiedAt: null,
         },
       });
