@@ -96,7 +96,7 @@ export class AuthService {
         this.authClient
           .send({ cmd: 'auth_add_credential' }, {
             ...body,
-            ...user,
+            id: user.id,
           } as AddCredentialPayloadDto)
           .pipe(
             catchError((error) => {
@@ -124,7 +124,6 @@ export class AuthService {
           } as RefreshAccessTokenPayloadDto)
           .pipe(
             catchError((error) => {
-              console.error(error);
               return throwError(() => error);
             }),
           ),
@@ -134,11 +133,14 @@ export class AuthService {
     }
   }
 
-  async logout(body: LogoutBodyDto) {
+  async logout(sessionId: string, body: LogoutBodyDto) {
     try {
       return await firstValueFrom(
         this.authClient
-          .send({ cmd: 'auth_logout' }, body as LogoutPayloadDto)
+          .send({ cmd: 'auth_logout' }, {
+            sessionId,
+            ...body,
+          } as LogoutPayloadDto)
           .pipe(
             catchError((error) => {
               return throwError(() => error);

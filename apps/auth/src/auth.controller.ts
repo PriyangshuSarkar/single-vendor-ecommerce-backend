@@ -48,6 +48,7 @@ export class AuthController {
     @Payload()
     payload: AddCredentialPayloadDto,
   ) {
+    console.debug(payload);
     return await this.authService.addCredential(payload);
   }
 

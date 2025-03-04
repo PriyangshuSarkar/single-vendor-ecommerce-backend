@@ -83,6 +83,7 @@ export class ErrorUtil {
 
     // Default Fallback
     throw new Exception.InternalServerErrorException(
+      JSON.stringify(error, null, 2) || error,
       'An unexpected server error occurred',
     );
   }

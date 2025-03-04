@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -22,8 +23,10 @@ import {
 import { Auth } from '../auth/auth.decorator';
 import { TransformInterceptor } from '@app/interceptors/transform.interceptor';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '../auth/auth.guard';
 
-@Controller('/user')
+@Controller('user')
+@UseGuards(AuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -31,7 +34,7 @@ export class UserController {
   @UseInterceptors(new TransformInterceptor(GetUserResponseDto, false))
   async getUser(
     @Auth() user: ValidateAccessTokenResponseDto,
-    @Param() param: GetUserParamDto,
+    @Param() param?: GetUserParamDto, // `param` will be undefined if not provided
   ) {
     return await this.userService.getUser(user, param);
   }
@@ -46,7 +49,7 @@ export class UserController {
     @Body() body: UpdateUserBodyDto,
     @Param() param: UpdateUserParamDto,
     @UploadedFiles()
-    files: {
+    files?: {
       avatar?: Express.Multer.File[];
     },
   ) {

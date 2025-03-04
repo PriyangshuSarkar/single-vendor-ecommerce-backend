@@ -34,12 +34,6 @@ export class UpdateUserBodyDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
-
-  @ValidateIf((o) => !o.name && !o.role && !o.isActive)
-  @IsDefined({
-    message: 'At least one filed must be provided of name, role or isActive',
-  })
-  _validateContactExists?: never;
 }
 
 export class UpdateUserResponseDto {

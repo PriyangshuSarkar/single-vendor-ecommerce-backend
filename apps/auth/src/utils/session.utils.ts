@@ -18,6 +18,11 @@ export class SessionUtil {
     private readonly configService: ConfigService,
   ) {}
 
+  private sessionExpiryDays = this.configService.get<number>(
+    'SESSION_EXPIRY_DAYS',
+    30,
+  );
+
   async createSession(
     userId: string,
     userSlug: string,
@@ -33,14 +38,10 @@ export class SessionUtil {
       });
 
       const refreshToken = uuid.v7(); // Generate a unique refresh token
-      const sessionExpiryDays = this.configService.get<number>(
-        'SESSION_EXPIRY_DAYS',
-        30,
-      );
 
       const refreshTokenExpiry = new Date();
       refreshTokenExpiry.setDate(
-        refreshTokenExpiry.getDate() + sessionExpiryDays,
+        refreshTokenExpiry.getDate() + this.sessionExpiryDays,
       );
 
       const hashedRefreshToken = await this.hashUtil.hash(refreshToken);
@@ -96,44 +97,37 @@ export class SessionUtil {
     userId?: string,
   ) {
     try {
-      const sessionExpiryDays = this.configService.get<number>(
-        'SESSION_EXPIRY_DAYS',
-        30,
-      );
-
-      const now = new Date();
-      const newExpiryDate = new Date(now);
-      newExpiryDate.setDate(now.getDate() + sessionExpiryDays);
-
       return await this.prisma.$transaction(async (tx) => {
         const session = await tx.session.findFirst({
           where: {
             id: sessionId,
-            ...(userId && { userId }), // Conditionally add userId filter
-            expiresAt: { gte: now },
+            expiresAt: { gte: new Date() },
             deletedAt: null,
+            user: { id: userId, deletedAt: null },
           },
-          select: { token: true, userId: true }, // Only select needed fields
+          select: { token: true, userId: true },
         });
 
-        if (!session) throw new UnauthorizedException('Invalid session');
+        if (
+          !session ||
+          !(await this.hashUtil.compare(refreshToken, session.token))
+        ) {
+          throw new UnauthorizedException('Invalid session or refresh token');
+        }
 
-        const isValid = await this.hashUtil.compare(
-          refreshToken,
-          session.token,
+        const refreshTokenExpiry = new Date();
+        refreshTokenExpiry.setDate(
+          refreshTokenExpiry.getDate() + this.sessionExpiryDays,
         );
-        if (!isValid) throw new UnauthorizedException('Invalid refresh token');
 
-        // Update session and generate token in parallel
         const [updatedSession, accessToken] = await Promise.all([
           tx.session.update({
-            // Ensure correct type
             where: { id: sessionId },
             data: {
-              expiresAt: newExpiryDate,
+              expiresAt: refreshTokenExpiry,
               user: { update: { lastLoginAt: new Date() } },
             },
-            select: { id: true }, // Minimize data returned
+            select: { id: true },
           }),
           this.jwtUtil.sign({ userId: session.userId }),
         ]);
@@ -141,7 +135,6 @@ export class SessionUtil {
         return { accessToken, refreshToken, sessionId: updatedSession.id };
       });
     } catch (error) {
-      // Rethrow specific errors, handle unexpected ones
       if (error instanceof UnauthorizedException) throw error;
       this.errorUtil.handleError(error);
       throw new UnauthorizedException('Session refresh failed');

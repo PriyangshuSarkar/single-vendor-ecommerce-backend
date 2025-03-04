@@ -72,6 +72,8 @@ export class UserService {
       if (!response) {
         throw new NotFoundException('User not found');
       }
+
+      return response;
     } catch (error) {
       this.errorUtil.handleError(error);
     }
@@ -99,7 +101,8 @@ export class UserService {
 
       let avatar = undefined;
 
-      if (file.avatar) {
+      if (file?.avatar) {
+        console.timeLog();
         avatar = await this.fileUtil.uploadToCloudinary(
           file.avatar[0],
           'users/avatars',
@@ -109,8 +112,8 @@ export class UserService {
 
       let slug = undefined;
 
-      if (body.name !== userExists.name) {
-        slug = await this.slugUtil.createUserSlug(body.name, userExists.id);
+      if (body?.name && body.name !== userExists.name) {
+        slug = await this.slugUtil.createUserSlug(body?.name, userExists.id);
       }
 
       const updatedUser = await this.prisma.user.update({
@@ -118,10 +121,10 @@ export class UserService {
           id: userExists.id,
         },
         data: {
-          name: body.name,
-          avatar: avatar,
-          slug: slug,
-          role: body.role as Role,
+          name: body.name || undefined,
+          avatar: avatar || undefined,
+          slug: slug || undefined,
+          role: (body.role as Role) || undefined,
         },
       });
 
@@ -153,6 +156,14 @@ export class UserService {
         },
         data: {
           deletedAt: new Date(),
+          credentials: {
+            updateMany: {
+              where: {},
+              data: {
+                deletedAt: new Date(),
+              },
+            },
+          },
         },
       });
 
@@ -165,7 +176,7 @@ export class UserService {
   private async userExists(id: string) {
     try {
       const user = await this.prisma.user.findFirst({
-        where: { OR: [{ id }, { slug: id }] },
+        where: { OR: [{ id }, { slug: id }], deletedAt: null },
       });
       if (!user) throw new NotFoundException(`User ${id} not found`);
       return user;

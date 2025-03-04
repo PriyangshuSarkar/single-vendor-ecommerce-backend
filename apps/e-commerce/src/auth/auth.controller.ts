@@ -32,17 +32,17 @@ import { Auth } from './auth.decorator';
 import { AuthGuard } from './auth.guard';
 import { TransformInterceptor } from '@app/interceptors/transform.interceptor';
 
-@Controller('/auth')
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/register')
+  @Post('register')
   @UseInterceptors(new TransformInterceptor(RegisterResponseDto))
   async register(@Body() body: RegisterBodyDto) {
     return await this.authService.register(body);
   }
 
-  @Post('/verify-otp')
+  @Post('verify-otp')
   @UseInterceptors(new TransformInterceptor(VerifyOtpResponseDto))
   async verifyOtp(
     @Req() req: Request,
@@ -68,7 +68,7 @@ export class AuthController {
     );
   }
 
-  @Post('/login')
+  @Post('login')
   @UseInterceptors(new TransformInterceptor(LoginResponseDto))
   async login(
     @Req() req: Request,
@@ -94,7 +94,7 @@ export class AuthController {
     );
   }
 
-  @Post('/add-credential')
+  @Post('add-credential')
   @UseGuards(AuthGuard)
   @UseInterceptors(new TransformInterceptor(AddCredentialResponseDto))
   async addCredential(
@@ -104,7 +104,7 @@ export class AuthController {
     return await this.authService.addCredential(body, user);
   }
 
-  @Patch('/refresh-access-token')
+  @Patch('refresh-access-token')
   @UseInterceptors(new TransformInterceptor(RefreshAccessTokenResponseDto))
   async refreshAccessToken(
     @Req() req: Request,
@@ -134,9 +134,11 @@ export class AuthController {
     );
   }
 
-  @Delete('/logout')
+  @Delete('logout')
   @UseInterceptors(new TransformInterceptor(LogoutResponseDto))
-  async logout(@Body() body: LogoutBodyDto) {
-    return await this.authService.logout(body);
+  async logout(@Req() req: Request, @Body() body: LogoutBodyDto) {
+    const session =
+      (req.headers['x-session-id'] as string) || req.cookies?.session_id;
+    return await this.authService.logout(session, body);
   }
 }

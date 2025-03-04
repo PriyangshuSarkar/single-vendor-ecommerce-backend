@@ -29,6 +29,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthGuard, ErrorUtil],
-  exports: [AuthService, AuthGuard],
+  exports: [AuthService, AuthGuard, ClientsModule],
 })
 export class AuthModule {}

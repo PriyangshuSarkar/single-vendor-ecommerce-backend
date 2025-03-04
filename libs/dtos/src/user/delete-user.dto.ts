@@ -1,3 +1,4 @@
+import { Expose } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 
 export class DeleteUserBodyDto {
@@ -13,6 +14,7 @@ export class DeleteUserParamDto {
 }
 
 export class DeleteUserResponseDto {
+  @Expose()
   @IsString()
   @IsOptional()
   message?: string;
